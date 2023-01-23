@@ -1,4 +1,4 @@
-module github.com/filcloud/lvm
+module github.com/takara9/lvm
 
 go 1.13
 
