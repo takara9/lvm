@@ -429,6 +429,11 @@ func TestCreateLogicalVolume(t *testing.T) {
 	defer check(lv.Remove)
 }
 
+
+
+
+
+
 func TestCreateLogicalVolume_Tagged(t *testing.T) {
 	loop, err := CreateLoopDevice(pvsize)
 	if err != nil {
@@ -786,6 +791,47 @@ func TestCreateLogicalVolume_VolumeLayout_RAID1_TooFewDisks(t *testing.T) {
 		t.Fatalf("Expected ErrTooFewDisks but got %v", err)
 	}
 }
+
+
+
+
+func TestCreateLogicalVolumeSnapshot(t *testing.T) {
+	loop, err := CreateLoopDevice(pvsize)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer loop.Close()
+	vg, cleanup, err := createVolumeGroup([]*LoopDevice{loop}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cleanup()
+	size, err := vg.BytesFree(VolumeLayout{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// source logical volume
+	name := "test-lv-" + uuid.New().String()
+	lv, err := vg.CreateLogicalVolume(name, size/3, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer check(lv.Remove)	
+
+
+	// snapshot volume	
+	name = "test-lv-" + uuid.New().String()
+	orgLv := lv.name
+
+        lvx, err := vg.CreateLogicalVolumeSnapshot(name, size/3, nil, orgLv)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer check(lvx.Remove)
+
+}
+
 
 func TestLookupLogicalVolume(t *testing.T) {
 	loop, err := CreateLoopDevice(pvsize)

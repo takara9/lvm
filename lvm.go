@@ -376,6 +376,43 @@ func (vg *VolumeGroup) CreateLogicalVolume(name string, sizeInBytes uint64, tags
 	return &LogicalVolume{name, sizeInBytes, vg}, nil
 }
 
+// CreateLogicalVolumeSnapshot creates a snapshot logical volume of the given original logical volume orgLv
+//
+// sizeInBytes does not need the same amount of origin has. In a typical scenario, 15-20% might be enough.
+//
+func (vg *VolumeGroup) CreateLogicalVolumeSnapshot(name string, sizeInBytes uint64, tags []string, orgLv string) (*LogicalVolume, error) {
+	if err := ValidateLogicalVolumeName(name); err != nil {
+		return nil, err
+	}
+	// Validate the tag.
+	var args []string
+	for _, tag := range tags {
+		if tag != "" {
+			if err := ValidateTag(tag); err != nil {
+				return nil, err
+			}
+			args = append(args, "--add-tag="+tag)
+		}
+	}
+	args = append(args, fmt.Sprintf("--size=%db", sizeInBytes))
+	args = append(args, "--name="+name)
+        args = append(args, "--snapshot")
+	args = append(args, fmt.Sprintf("/dev/%v/%v", vg.name, orgLv))
+
+	if err := run("lvcreate", nil, args...); err != nil {
+		if isInsufficientSpace(err) {
+			return nil, ErrNoSpace
+		}
+		if isInsufficientDevices(err) {
+			return nil, ErrTooFewDisks
+		}
+		return nil, err
+	}
+	return &LogicalVolume{name, sizeInBytes, vg}, nil
+}
+
+
+
 // ValidateLogicalVolumeName validates a volume group name. A valid volume
 // group name can consist of a limited range of characters only. The allowed
 // characters are [A-Za-z0-9_+.-].
