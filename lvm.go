@@ -103,9 +103,9 @@ func (vg *VolumeGroup) BytesTotal() (uint64, error) {
 }
 
 // 追加
-func (vg *VolumeGroup) CheckVg() ( uint64, uint64, error) {
+func (vg *VolumeGroup) CheckVg(vgname string) ( uint64, uint64, error) {
 	result := new(vgsOutput)
-	if err := run("vgs", result, "--options=vg_size,vg_free", vg.name); err != nil {
+	if err := run("vgs", result, "--options=vg_size,vg_free", vgname); err != nil {
 		if IsVolumeGroupNotFound(err) {
 			return 0,0, ErrVolumeGroupNotFound
 		}
