@@ -102,6 +102,23 @@ func (vg *VolumeGroup) BytesTotal() (uint64, error) {
 	return 0, ErrVolumeGroupNotFound
 }
 
+// 追加
+func (vg *VolumeGroup) CheckVg() ( uint64, uint64, error) {
+	result := new(vgsOutput)
+	if err := run("vgs", result, "--options=vg_size,vg_free", vg.name); err != nil {
+		if IsVolumeGroupNotFound(err) {
+			return 0,0, ErrVolumeGroupNotFound
+		}
+		return 0,0, err
+	}
+	for _, report := range result.Report {
+		for _, vg := range report.Vg {
+			return vg.VgSize,vg.VgFree, nil
+		}
+	}
+	return 0,0,ErrVolumeGroupNotFound
+}
+
 // BytesFree returns the unallocated space in bytes of the volume group.
 func (vg *VolumeGroup) BytesFree(raid VolumeLayout) (uint64, error) {
 	pvnames, err := vg.ListPhysicalVolumeNames()
