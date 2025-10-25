@@ -957,7 +957,7 @@ func run(cmd string, v interface{}, extraArgs ...string) error {
 	c.Stderr = stderr
 	if err := c.Run(); err != nil {
 		errstr := ignoreWarnings(stderr.String())
-		log.Print("stdout: " + stdout.String())
+		//log.Print("stdout: " + stdout.String())
 		log.Print("stderr: " + errstr)
 		return errors.New(errstr)
 	}
