@@ -951,7 +951,7 @@ func run(cmd string, v interface{}, extraArgs ...string) error {
 	}
 	args = append(args, extraArgs...)
 	c := exec.Command(cmd, args...)
-	//log.Printf("Executing: %v", c)
+	log.Printf("Executing: %v", c)
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
 	c.Stdout = stdout
 	c.Stderr = stderr
@@ -963,10 +963,9 @@ func run(cmd string, v interface{}, extraArgs ...string) error {
 	}
 	stdoutbuf := stdout.Bytes()
 	stderrbuf := stderr.Bytes()
-	//errstr := ignoreWarnings(string(stderrbuf))
-	_ = ignoreWarnings(string(stderrbuf))
-	//log.Printf("stdout: " + string(stdoutbuf))
-	//log.Printf("stderr: " + errstr)
+	errstr := ignoreWarnings(string(stderrbuf))
+	log.Printf("stdout: " + string(stdoutbuf))
+	log.Printf("stderr: " + errstr)
 	if v != nil {
 		if err := json.Unmarshal(stdoutbuf, v); err != nil {
 			return fmt.Errorf("%v: [%v]", err, string(stdoutbuf))
