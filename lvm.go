@@ -2,6 +2,7 @@ package lvm
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -960,16 +961,17 @@ func run(cmd string, v interface{}, extraArgs ...string) error {
 		log.Print("stderr: " + errstr)
 		return errors.New(errstr)
 	}
-	//stdoutbuf := stdout.Bytes()
-	//stderrbuf := stderr.Bytes()
+	stdoutbuf := stdout.Bytes()
+	stderrbuf := stderr.Bytes()
 	//errstr := ignoreWarnings(string(stderrbuf))
+	_ = ignoreWarnings(string(stderrbuf))
 	//log.Printf("stdout: " + string(stdoutbuf))
 	//log.Printf("stderr: " + errstr)
-	//if v != nil {
-	//	if err := json.Unmarshal(stdoutbuf, v); err != nil {
-	//		return fmt.Errorf("%v: [%v]", err, string(stdoutbuf))
-	//	}
-	//}
+	if v != nil {
+		if err := json.Unmarshal(stdoutbuf, v); err != nil {
+			return fmt.Errorf("%v: [%v]", err, string(stdoutbuf))
+		}
+	}
 	return nil
 }
 
