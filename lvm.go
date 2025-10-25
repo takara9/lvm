@@ -2,7 +2,6 @@ package lvm
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os/exec"
@@ -103,20 +102,20 @@ func (vg *VolumeGroup) BytesTotal() (uint64, error) {
 }
 
 // 追加
-func (vg *VolumeGroup) CheckVg() ( uint64, uint64, error) {
+func (vg *VolumeGroup) CheckVg() (uint64, uint64, error) {
 	result := new(vgsOutput)
 	if err := run("vgs", result, "--options=vg_size,vg_free", vg.name); err != nil {
 		if IsVolumeGroupNotFound(err) {
-			return 0,0, ErrVolumeGroupNotFound
+			return 0, 0, ErrVolumeGroupNotFound
 		}
-		return 0,0, err
+		return 0, 0, err
 	}
 	for _, report := range result.Report {
 		for _, vg := range report.Vg {
-			return vg.VgSize,vg.VgFree, nil
+			return vg.VgSize, vg.VgFree, nil
 		}
 	}
-	return 0,0,ErrVolumeGroupNotFound
+	return 0, 0, ErrVolumeGroupNotFound
 }
 
 // BytesFree returns the unallocated space in bytes of the volume group.
@@ -396,7 +395,6 @@ func (vg *VolumeGroup) CreateLogicalVolume(name string, sizeInBytes uint64, tags
 // CreateLogicalVolumeSnapshot creates a snapshot logical volume of the given original logical volume orgLv
 //
 // sizeInBytes does not need the same amount of origin has. In a typical scenario, 15-20% might be enough.
-//
 func (vg *VolumeGroup) CreateLogicalVolumeSnapshot(name string, sizeInBytes uint64, tags []string, orgLv string) (*LogicalVolume, error) {
 	if err := ValidateLogicalVolumeName(name); err != nil {
 		return nil, err
@@ -413,7 +411,7 @@ func (vg *VolumeGroup) CreateLogicalVolumeSnapshot(name string, sizeInBytes uint
 	}
 	args = append(args, fmt.Sprintf("--size=%db", sizeInBytes))
 	args = append(args, "--name="+name)
-        args = append(args, "--snapshot")
+	args = append(args, "--snapshot")
 	args = append(args, fmt.Sprintf("/dev/%v/%v", vg.name, orgLv))
 
 	if err := run("lvcreate", nil, args...); err != nil {
@@ -427,8 +425,6 @@ func (vg *VolumeGroup) CreateLogicalVolumeSnapshot(name string, sizeInBytes uint
 	}
 	return &LogicalVolume{name, sizeInBytes, vg}, nil
 }
-
-
 
 // ValidateLogicalVolumeName validates a volume group name. A valid volume
 // group name can consist of a limited range of characters only. The allowed
@@ -954,7 +950,7 @@ func run(cmd string, v interface{}, extraArgs ...string) error {
 	}
 	args = append(args, extraArgs...)
 	c := exec.Command(cmd, args...)
-	log.Printf("Executing: %v", c)
+	//log.Printf("Executing: %v", c)
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
 	c.Stdout = stdout
 	c.Stderr = stderr
@@ -964,16 +960,16 @@ func run(cmd string, v interface{}, extraArgs ...string) error {
 		log.Print("stderr: " + errstr)
 		return errors.New(errstr)
 	}
-	stdoutbuf := stdout.Bytes()
-	stderrbuf := stderr.Bytes()
-	errstr := ignoreWarnings(string(stderrbuf))
-	log.Printf("stdout: " + string(stdoutbuf))
-	log.Printf("stderr: " + errstr)
-	if v != nil {
-		if err := json.Unmarshal(stdoutbuf, v); err != nil {
-			return fmt.Errorf("%v: [%v]", err, string(stdoutbuf))
-		}
-	}
+	//stdoutbuf := stdout.Bytes()
+	//stderrbuf := stderr.Bytes()
+	//errstr := ignoreWarnings(string(stderrbuf))
+	//log.Printf("stdout: " + string(stdoutbuf))
+	//log.Printf("stderr: " + errstr)
+	//if v != nil {
+	//	if err := json.Unmarshal(stdoutbuf, v); err != nil {
+	//		return fmt.Errorf("%v: [%v]", err, string(stdoutbuf))
+	//	}
+	//}
 	return nil
 }
 
